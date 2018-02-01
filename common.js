@@ -1,4 +1,5 @@
 "use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
 var EventHandler = (function () {
     function EventHandler() {
         this.handlers = [];
@@ -21,6 +22,7 @@ var Message = (function () {
         this.bytes = mqttMessage.payloadBytes || null;
         this.topic = mqttMessage.destinationName || '';
         this.qos = mqttMessage.qos || 0;
+        this.retained = mqttMessage.retained || false;
     }
     return Message;
 }());

@@ -18,6 +18,7 @@ declare class Message {
   bytes: ArrayBuffer;
   topic: string;
   qos: number;
+  retained: boolean;
 }
 
 declare class MQTTClient {

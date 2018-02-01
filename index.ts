@@ -93,7 +93,13 @@ class MQTTClient {
   }
 
   public publish(message: Message){
-    this.mqttClient.send(message);
+    const mqttMessage = message.bytes !== null ?
+      new MQTT.Message(message.bytes) : new MQTT.Message(message.payload);
+    mqttMessage.destinationName = message.topic;
+    mqttMessage.retained = message.retained;
+    mqttMessage.qos = message.qos;
+
+    this.mqttClient.send(mqttMessage);
   }
 
 }

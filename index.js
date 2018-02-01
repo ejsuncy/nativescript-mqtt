@@ -1,5 +1,6 @@
 "use strict";
-var common_1 = require('./common');
+Object.defineProperty(exports, "__esModule", { value: true });
+var common_1 = require("./common");
 var MQTT = require('./mqttws31');
 var MQTTClient = (function () {
     function MQTTClient(options) {
@@ -46,7 +47,6 @@ var MQTTClient = (function () {
         if (this.connected) {
             return;
         }
-        ;
         var connectOptions = {
             userName: username,
             password: password,
@@ -56,7 +56,7 @@ var MQTTClient = (function () {
                 _this.connected = true;
             },
             onFailure: function (err) {
-                _this.connectionFailure.trigger(err.message);
+                _this.connectionFailure.trigger(err.errorMessage);
             }
         };
         this.mqttClient.onConnectionLost = function (err) {
@@ -75,7 +75,12 @@ var MQTTClient = (function () {
         this.mqttClient.unsubscribe(topic);
     };
     MQTTClient.prototype.publish = function (message) {
-        this.mqttClient.send(message);
+        var mqttMessage = message.bytes !== null ?
+            new MQTT.Message(message.bytes) : new MQTT.Message(message.payload);
+        mqttMessage.destinationName = message.topic;
+        mqttMessage.retained = message.retained;
+        mqttMessage.qos = message.qos;
+        this.mqttClient.send(mqttMessage);
     };
     return MQTTClient;
 }());
