@@ -80,10 +80,10 @@ function onMessageArrived(message) {
  * @namespace Paho.MQTT
  */
 
-//removing PAHO namespace as it is not needed.
-// if (typeof Paho === "undefined") {
-//     Paho = {};
-// }
+// removing PAHO namespace as it is not needed.
+if (typeof Paho === "undefined") {
+    Paho = {};
+}
 
 /*The next set of code is to run the PAHO MQTT Client inside of nativescript-MQTT */
 //require WebSockets so we can make sure that it is available for communication
@@ -96,7 +96,7 @@ let window = {
 //create a map object for the localStorage
 let localStorage = new Map();
 
-MQTT = (function(global) {
+Paho.MQTT = (function(global) {
 
     // Private variables below, these are only visible inside the function closure
     // which is used to define the module.
@@ -556,7 +556,7 @@ MQTT = (function(global) {
                     pos += 2;
                 }
 
-                var message = new MQTT.Message(input.subarray(pos, endPos));
+                var message = new Paho.MQTT.Message(input.subarray(pos, endPos));
                 if ((messageInfo & 0x01) == 0x01)
                     message.retained = true;
                 if ((messageInfo & 0x08) == 0x08)
@@ -753,18 +753,19 @@ MQTT = (function(global) {
                 this._client._disconnected(ERROR.PING_TIMEOUT.code, format(ERROR.PING_TIMEOUT));
             } else {
                 this.isReset = false;
-                this._client._trace("Pinger.doPing", "send PINGREQ");
+                this._client._trace("Pinger.doPing", "send PINGREQ", this._keepAliveInterval);
                 this._client.socket.send(pingReq);
                 this.timeout = this._window.setTimeout(doTimeout(this), this._keepAliveInterval);
             }
-        }
+        };
 
         this.reset = function() {
             this.isReset = true;
             this._window.clearTimeout(this.timeout);
+            this._client._trace("Reset", "keepAliveInterval: " + this._keepAliveInterval);
             if (this._keepAliveInterval > 0)
-                this.timeout = setTimeout(doTimeout(this), this._keepAliveInterval);
-        }
+                this.timeout = this._window.setTimeout(doTimeout(this), this._keepAliveInterval);
+        };
 
         this.cancel = function() {
             this._window.clearTimeout(this.timeout);
@@ -814,7 +815,7 @@ MQTT = (function(global) {
               throw new Error(format(ERROR.UNSUPPORTED, ["ArrayBuffer"]));
           }
           */
-        this._trace("MQTT.Client", uri, host, port, path, clientId);
+        this._trace("Paho.MQTT.Client", uri, host, port, path, clientId);
 
         this.host = host;
         this.port = port;
@@ -1144,7 +1145,7 @@ MQTT = (function(global) {
                     hex = hex.substring(2, hex.length);
                     byteStream[i++] = x;
                 }
-                var payloadMessage = new MQTT.Message(byteStream);
+                var payloadMessage = new Paho.MQTT.Message(byteStream);
 
                 payloadMessage.qos = storedMessage.payloadMessage.qos;
                 payloadMessage.destinationName = storedMessage.payloadMessage.destinationName;
@@ -1427,7 +1428,11 @@ MQTT = (function(global) {
                     this._disconnected(ERROR.INVALID_MQTT_MESSAGE_TYPE.code, format(ERROR.INVALID_MQTT_MESSAGE_TYPE, [wireMessage.type]));
             };
         } catch (error) {
-            this._disconnected(ERROR.INTERNAL_ERROR.code, format(ERROR.INTERNAL_ERROR, [error.message, error.stack.toString()]));
+            if (!error.stack){
+                this._disconnected(ERROR.INTERNAL_ERROR.code, format(ERROR.INTERNAL_ERROR, [error.message || error, "Stack trace unavailable."]));
+            } else {
+                this._disconnected(ERROR.INTERNAL_ERROR.code, format(ERROR.INTERNAL_ERROR, [error.message, error.stack]));
+            }
             return;
         }
     };
@@ -2327,4 +2332,4 @@ MQTT = (function(global) {
     };
 })(window);
 
-module.exports = MQTT;
+module.exports.Paho = Paho;

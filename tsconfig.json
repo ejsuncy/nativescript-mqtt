@@ -15,7 +15,6 @@
         "noLib": false
     },
     "files": [
-        "./index.d.ts",
         "./common.ts",
         "./index.ts"
     ]
